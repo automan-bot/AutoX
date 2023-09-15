@@ -15,6 +15,7 @@ module.exports = function (runtime, scope) {
         return http.__okhttp__.client();
     }
 
+
     http.post = function (url, data, options, callback) {
         options = options || {};
         options.method = "POST";
@@ -131,7 +132,7 @@ module.exports = function (runtime, scope) {
                 }
             }
             options.body = b.build();
-        } else if (options.contentType == "application/json") {
+        } else if (options.contentType == "application/json"||options.contentType == "application/json;charset=UTF-8") {
             options.body = JSON.stringify(data);
         } else {
             options.body = data;

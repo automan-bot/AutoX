@@ -11,8 +11,9 @@ public class TextUtils {
     public static String join(CharSequence delimiter, Object... tokens) {
         return android.text.TextUtils.join(delimiter, tokens);
     }
-
-
+    public static boolean isBlank(String str) {
+        return null == str || "".equals(str);
+    }
     @NonNull
     public static String toEmptyIfNull(String message) {
         if (message == null)
