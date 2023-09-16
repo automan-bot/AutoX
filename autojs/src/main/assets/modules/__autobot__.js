@@ -1,6 +1,5 @@
 module.exports = function (__runtime__, scope) {
   importPackage(Packages["okhttp3"]);
-  // console.log("屏幕方向发生改变,当前方向:" + value);
   function ScreenInfo() {
     this.width = iScreenInfo.width;
     this.height = iScreenInfo.height;
@@ -65,6 +64,8 @@ module.exports = function (__runtime__, scope) {
     baseWsUrl: "ws://127.0.0.1:18080",
     wsUrl: "",
     urlMap: {},
+    _mWsHearBeatInterval: false,
+    _wsConnected: false,
     mErrorListener: null,
     mClipTextChangeListenr: null,
     mOrentationChangeListenr: null,
@@ -86,11 +87,11 @@ module.exports = function (__runtime__, scope) {
       } catch (e) {}
     }
     try {
-      clearInterval(this.mWsHearBeatInterval);
+      clearInterval(this._mWsHearBeatInterval);
     } catch (e) {}
   };
   autobot._startHeartBeat = function () {
-    this.mWsHearBeatInterval = setInterval(() => {
+    this._mWsHearBeatInterval = setInterval(() => {
       this.mWs.send("");
     }, 2000);
   };
@@ -278,7 +279,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: para,
     });
-    return !!axiosResponse.data;
+    return !!axiosResponse.body.string();
   };
   autobot.version = function () {
     const axiosResponse = this._request({
@@ -286,7 +287,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: para,
     });
-    return axiosResponse.data;
+    return axiosResponse.body.string();
   };
   autobot.getActiveInfo = function () {
     const axiosResponse = this._request({
@@ -294,7 +295,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: para,
     });
-    return axiosResponse.data.data;
+    return axiosResponse.body.json().data;
   };
   autobot.getDeviceId = function () {
     const axiosResponse = this._request({
@@ -302,7 +303,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: para,
     });
-    return axiosResponse.data.data;
+    return axiosResponse.body.json().data;
   };
   autobot.screenInfo = function () {
     const axiosResponse = this._request({
@@ -310,7 +311,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: para,
     });
-    return axiosResponse.data.data;
+    return axiosResponse.body.json().data;
   };
   autobot.getSystemInfo = function (ara) {
     const axiosResponse = this._request({
@@ -318,7 +319,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: para,
     });
-    return axiosResponse.data.data;
+    return axiosResponse.body.json().data;
   };
   autobot.screenJson = function () {
     const axiosResponse = this._request({
@@ -326,7 +327,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: para,
     });
-    return axiosResponse.data.data;
+    return axiosResponse.body.json().data;
   };
   autobot.screenXml = function () {
     const axiosResponse = this._request({
@@ -334,7 +335,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: para,
     });
-    return axiosResponse.data.data;
+    return axiosResponse.body.json().data;
   };
   autobot.screenShotBase64 = function () {
     const axiosResponse = this._request({
@@ -342,7 +343,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: para,
     });
-    return axiosResponse.data.data;
+    return axiosResponse.body.json().data;
   };
   autobot.screenShot = function () {
     // const result=this.urlMap["screenShot"]
@@ -352,7 +353,7 @@ module.exports = function (__runtime__, scope) {
       params: para,
       responseType: "arraybuffer",
     });
-    return axiosResponse.data.bytes();
+    return axiosResponse.body.json().bytes();
   };
   autobot.screenRotation = function () {
     const axiosResponse = this._request({
@@ -360,7 +361,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: para,
     });
-    return axiosResponse.data.data;
+    return axiosResponse.body.json().data;
   };
   autobot.getAllContact = function () {
     const axiosResponse = this._request({
@@ -368,7 +369,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: para,
     });
-    return axiosResponse.data.data;
+    return axiosResponse.body.json().data;
   };
   autobot.deleteContact = function () {
     const axiosResponse = this._request({
@@ -376,7 +377,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: para,
     });
-    return Number(axiosResponse.data.data);
+    return Number(axiosResponse.body.json().data);
   };
   autobot.getClipText = function () {
     const axiosResponse = this._request({
@@ -384,7 +385,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: para,
     });
-    return axiosResponse.data.data;
+    return axiosResponse.body.json().data;
   };
   autobot.startRecoreScreen = function () {
     const axiosResponse = this._request({
@@ -392,7 +393,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: para,
     });
-    return axiosResponse.data.data == "1";
+    return axiosResponse.body.json().data == "1";
   };
   autobot.stopRecoreScreen = function () {
     const axiosResponse = this._request({
@@ -400,7 +401,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: para,
     });
-    return axiosResponse.data.data == "1";
+    return axiosResponse.body.json().data == "1";
   };
   autobot.turnScreenOff = function () {
     const axiosResponse = this._request({
@@ -408,7 +409,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: para,
     });
-    return axiosResponse.data.data == "1";
+    return axiosResponse.body.json().data == "1";
   };
   autobot.exit = function (para) {
     this._request({
@@ -423,7 +424,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: para,
     });
-    return axiosResponse.data.data == "1";
+    return axiosResponse.body.json().data == "1";
   };
   autobot.getIp = function () {
     const axiosResponse = this._request({
@@ -431,7 +432,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: para,
     });
-    return axiosResponse.data.data;
+    return axiosResponse.body.json().data;
   };
   autobot.getAllSms = function (number) {
     number = number || "*";
@@ -448,7 +449,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: { number: number },
     });
-    return Number(axiosResponse.data.data);
+    return Number(axiosResponse.body.json().data);
   };
   autobot.download = function (para) {
     /* const axiosResponse = this._request({
@@ -467,7 +468,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: para,
     });
-    return axiosResponse.data.data;
+    return axiosResponse.body.json().data;
   };
   autobot.getTopActivity = function () {
     const axiosResponse = this._request({
@@ -475,7 +476,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: para,
     });
-    return axiosResponse.data.data;
+    return axiosResponse.body.json().data;
   };
   autobot.getStartActivity = function (packageName) {
     const axiosResponse = this._request({
@@ -483,7 +484,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: { packageName: packageName },
     });
-    return axiosResponse.data.data;
+    return axiosResponse.body.json().data;
   };
   autobot.startPackage = function (packageName) {
     const axiosResponse = this._request({
@@ -491,7 +492,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: { packageName: packageName },
     });
-    return axiosResponse.data.data == "1";
+    return axiosResponse.body.json().data == "1";
   };
   autobot.stopPackage = function (packageName) {
     const axiosResponse = this._request({
@@ -499,7 +500,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: { packageName: packageName },
     });
-    return axiosResponse.data.data == "1";
+    return axiosResponse.body.json().data == "1";
   };
   autobot.clearPackage = function (packageName) {
     const axiosResponse = this._request({
@@ -507,7 +508,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: { packageName: packageName },
     });
-    return axiosResponse.data.data == "1";
+    return axiosResponse.body.json().data == "1";
   };
   autobot.getAllPackage = function () {
     const axiosResponse = this._request({
@@ -515,7 +516,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: para,
     });
-    return axiosResponse.data.data;
+    return axiosResponse.body.json().data;
   };
   autobot.getPackageInfo = function (packageName) {
     const axiosResponse = this._request({
@@ -523,7 +524,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: { packageName: packageName },
     });
-    return axiosResponse.data.data;
+    return axiosResponse.body.json().data;
   };
   autobot.stopMusic = function () {
     const axiosResponse = this._request({
@@ -531,7 +532,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: para,
     });
-    return axiosResponse.data.data == "1";
+    return axiosResponse.body.json().data == "1";
   };
   autobot.cancelAllNotifications = function () {
     const axiosResponse = this._request({
@@ -539,7 +540,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: para,
     });
-    return axiosResponse.data.data == "1";
+    return axiosResponse.body.json().data == "1";
   };
   autobot.callPhone = function (number) {
     const axiosResponse = this._request({
@@ -547,7 +548,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: { number: number },
     });
-    return axiosResponse.data.data;
+    return axiosResponse.body.json().data;
   };
   autobot.endCall = function () {
     const axiosResponse = this._request({
@@ -555,7 +556,7 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: para,
     });
-    return axiosResponse.data.data == "1";
+    return axiosResponse.body.json().data == "1";
   };
 
   //上传文件
@@ -571,7 +572,7 @@ module.exports = function (__runtime__, scope) {
         config
       )
     );
-    return axiosResponse.data.data; */
+    return axiosResponse.body.json().data; */
   };
   autobot.uploadUrl = function () {
     const baseUploadUrl = this.urlMap["upload"];
@@ -587,7 +588,7 @@ module.exports = function (__runtime__, scope) {
       method: "post",
       data: { value: value },
     });
-    return axiosResponse.data.data == "1";
+    return axiosResponse.body.json().data == "1";
   };
   autobot.inputText = function (value) {
     const axiosResponse = this._request({
@@ -598,7 +599,7 @@ module.exports = function (__runtime__, scope) {
       method: "post",
       data: { value: value },
     });
-    return axiosResponse.data.data == "1";
+    return axiosResponse.body.json().data == "1";
   };
   autobot.inputChar = function (value) {
     const axiosResponse = this._request({
@@ -609,7 +610,7 @@ module.exports = function (__runtime__, scope) {
       method: "post",
       data: { value: value },
     });
-    return axiosResponse.data.data == "1";
+    return axiosResponse.body.json().data == "1";
   };
 
   autobot.execCmd = function (shell, timeout) {
@@ -626,7 +627,7 @@ module.exports = function (__runtime__, scope) {
         timeout: timeout,
       },
     });
-    return axiosResponse.data.data;
+    return axiosResponse.body.json().data;
   };
 
   autobot.pressKeyCode = function (keyCode) {
@@ -638,7 +639,7 @@ module.exports = function (__runtime__, scope) {
       method: "post",
       data: { value: keyCode },
     });
-    return axiosResponse.data.data == "1";
+    return axiosResponse.body.json().data == "1";
   };
   autobot.insertContact = function (name, phoneNumber) {
     const axiosResponse = this._request({
@@ -652,7 +653,7 @@ module.exports = function (__runtime__, scope) {
         number: phoneNumber,
       },
     });
-    return axiosResponse.data.data == "1";
+    return axiosResponse.body.json().data == "1";
   };
   autobot.gestures = function (para) {
     const axiosResponse = this._request({
@@ -663,7 +664,7 @@ module.exports = function (__runtime__, scope) {
       method: "post",
       data: para,
     });
-    return axiosResponse.data.data == "1";
+    return axiosResponse.body.json().data == "1";
   };
   autobot.gesture = function (para) {
     const axiosResponse = this._request({
@@ -674,7 +675,7 @@ module.exports = function (__runtime__, scope) {
       method: "post",
       data: para,
     });
-    return axiosResponse.data.data == "1";
+    return axiosResponse.body.json().data == "1";
   };
   autobot.emptyDir = function (path) {
     const axiosResponse = this._request({
@@ -685,7 +686,7 @@ module.exports = function (__runtime__, scope) {
       method: "post",
       data: { value: path },
     });
-    return axiosResponse.data.data == "1";
+    return axiosResponse.body.json().data == "1";
   };
   autobot.delFile = function (path) {
     const axiosResponse = this._request({
@@ -696,7 +697,7 @@ module.exports = function (__runtime__, scope) {
       method: "post",
       data: { value: path },
     });
-    return axiosResponse.data.data == "1";
+    return axiosResponse.body.json().data == "1";
   };
   autobot.listFile = function (para) {
     const axiosResponse = this._request({
@@ -707,7 +708,7 @@ module.exports = function (__runtime__, scope) {
       method: "post",
       data: { value: path },
     });
-    return axiosResponse.data.data;
+    return axiosResponse.body.json().data;
   };
   autobot.sendSms = function (phoneNumber, content) {
     const axiosResponse = this._request({
@@ -721,7 +722,7 @@ module.exports = function (__runtime__, scope) {
         value: content,
       },
     });
-    return axiosResponse.data.data == "1";
+    return axiosResponse.body.json().data == "1";
   };
 
   autobot.setDisplayName = function (displayName) {
@@ -735,7 +736,7 @@ module.exports = function (__runtime__, scope) {
         value: displayName,
       },
     });
-    return axiosResponse.data.data == "1";
+    return axiosResponse.body.json().data == "1";
   };
   autobot.playMusic = function (musicUrl) {
     const axiosResponse = this._request({
@@ -746,7 +747,7 @@ module.exports = function (__runtime__, scope) {
       method: "post",
       data: { value: musicUrl },
     });
-    return axiosResponse.data.data == "1";
+    return axiosResponse.body.json().data == "1";
   };
 
   return autobot;
