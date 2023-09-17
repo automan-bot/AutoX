@@ -48,6 +48,10 @@ module.exports = function (__runtime__, scope) {
     inputChar: "/inputChar",
     pressKeyCode: "/pressKeyCode",
     insertContact: "/insertContact",
+    click: "/click",
+    longClick: "/longClick",
+    press: "/press",
+    swipe: "/swipe",
     gestures: "/gestures",
     gesture: "/gesture",
     emptyDir: "/emptyDir",
@@ -590,25 +594,25 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data == "1";
   };
-  autobot.inputText = function (value) {
+  autobot.inputText = function (text) {
     const axiosResponse = this._request({
       url: this.urlMap["inputText"],
       headers: {
         "Content-Type": "application/json;charset=UTF-8",
       },
       method: "post",
-      data: { value: value },
+      data: { value: text },
     });
     return axiosResponse.body.json().data == "1";
   };
-  autobot.inputChar = function (value) {
+  autobot.inputChar = function (charText) {
     const axiosResponse = this._request({
       url: this.urlMap["inputChar"],
       headers: {
         "Content-Type": "application/json;charset=UTF-8",
       },
       method: "post",
-      data: { value: value },
+      data: { value: charText },
     });
     return axiosResponse.body.json().data == "1";
   };
@@ -651,6 +655,56 @@ module.exports = function (__runtime__, scope) {
       data: {
         name: name,
         number: phoneNumber,
+      },
+    });
+    return axiosResponse.body.json().data == "1";
+  };
+  autobot.click = function (x, y) {
+    const axiosResponse = this._request({
+      url: this.urlMap["gestures"],
+      headers: {
+        "Content-Type": "application/json;charset=UTF-8",
+      },
+      method: "post",
+      data: { x: x, y: y },
+    });
+    return axiosResponse.body.json().data == "1";
+  };
+  autobot.longClick = function (x, y) {
+    const axiosResponse = this._request({
+      url: this.urlMap["gestures"],
+      headers: {
+        "Content-Type": "application/json;charset=UTF-8",
+      },
+      method: "post",
+      data: { x: x, y: y },
+    });
+    return axiosResponse.body.json().data == "1";
+  };
+  autobot.press = function (x, y, duration) {
+    const axiosResponse = this._request({
+      url: this.urlMap["gestures"],
+      headers: {
+        "Content-Type": "application/json;charset=UTF-8",
+      },
+      method: "post",
+      data: { x: x, y: y, duration: duration },
+    });
+    return axiosResponse.body.json().data == "1";
+  };
+  autobot.swipe = function (x1, y1, x2, y2, duration) {
+    const axiosResponse = this._request({
+      url: this.urlMap["gestures"],
+      headers: {
+        "Content-Type": "application/json;charset=UTF-8",
+      },
+      method: "post",
+      data: {
+        x1: x1,
+        y1: y1,
+        x2: x2,
+        y2: y2,
+        duration: duration,
       },
     });
     return axiosResponse.body.json().data == "1";
