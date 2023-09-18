@@ -666,7 +666,7 @@ module.exports = function (__runtime__, scope) {
   };
   autobot.click = function (x, y) {
     const axiosResponse = this._request({
-      url: this.urlMap["gestures"],
+      url: this.urlMap["click"],
       headers: {
         "Content-Type": "application/json;charset=UTF-8",
       },
@@ -677,7 +677,7 @@ module.exports = function (__runtime__, scope) {
   };
   autobot.longClick = function (x, y) {
     const axiosResponse = this._request({
-      url: this.urlMap["gestures"],
+      url: this.urlMap["longClick"],
       headers: {
         "Content-Type": "application/json;charset=UTF-8",
       },
@@ -688,7 +688,7 @@ module.exports = function (__runtime__, scope) {
   };
   autobot.press = function (x, y, duration) {
     const axiosResponse = this._request({
-      url: this.urlMap["gestures"],
+      url: this.urlMap["press"],
       headers: {
         "Content-Type": "application/json;charset=UTF-8",
       },
@@ -699,7 +699,7 @@ module.exports = function (__runtime__, scope) {
   };
   autobot.swipe = function (x1, y1, x2, y2, duration) {
     const axiosResponse = this._request({
-      url: this.urlMap["gestures"],
+      url: this.urlMap["swipe"],
       headers: {
         "Content-Type": "application/json;charset=UTF-8",
       },
@@ -749,7 +749,7 @@ module.exports = function (__runtime__, scope) {
   };
   autobot.delFile = function (path) {
     const axiosResponse = this._request({
-      url: this.urlMap["emptyDir"],
+      url: this.urlMap["delFile"],
       headers: {
         "Content-Type": "application/json;charset=UTF-8",
       },
