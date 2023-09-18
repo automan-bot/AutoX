@@ -1,5 +1,6 @@
 module.exports = function (__runtime__, scope) {
   importPackage(Packages["okhttp3"]);
+  const cheerio = require("cheerio");
   function ScreenInfo() {
     this.width = iScreenInfo.width;
     this.height = iScreenInfo.height;
@@ -709,7 +710,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data == "1";
   };
-  autobot.gestures = function (para) {
+  autobot._gestures = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["gestures"],
       headers: {
@@ -720,7 +721,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data == "1";
   };
-  autobot.gesture = function (para) {
+  autobot._gesture = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["gesture"],
       headers: {
@@ -802,6 +803,173 @@ module.exports = function (__runtime__, scope) {
       data: { value: musicUrl },
     });
     return axiosResponse.body.json().data == "1";
+  };
+
+  //上边都是httpapi，下边对参数做autox.js适配
+  //单指手势
+  autobot.gesture = function () {
+    if (arguments.length < 2) throw new Error("gesture函数至少需要2个参数");
+    let para = {
+      duration: 0,
+      points: [],
+    };
+    if (typeof arguments[0] != "number") {
+      throw new Error("gesture函数第一个参数必须为number类型");
+    }
+    para.duration = arguments[0];
+    for (let i = 1; i < arguments.length; i++) {
+      let point = arguments[i];
+      if (point.length != 2) {
+        throw new Error("point必须同时包含x，y");
+      }
+      para.points.push({
+        x: point[0],
+        y: point[1],
+      });
+    }
+    return this._gesture(para);
+  };
+  //多指手势
+  autobot.gestures = function () {
+    if (!arguments.length) throw new Error("gestures函数至少需要1个参数");
+    const resultPara = [];
+    for (let gesture of arguments) {
+      let para = {
+        delay: 0,
+        duration: 0,
+        points: [],
+      };
+      let startIndex = 2;
+      if (typeof gesture[1] == "number") {
+        para.delay = gesture[0];
+        para.duration = gesture[1];
+        startIndex = 2;
+      } else {
+        para.duration = gesture[0];
+        startIndex = 1;
+      }
+      for (let i = startIndex; i < gesture.length; i++) {
+        let point = gesture[i];
+        if (point.length != 2) {
+          throw new Error("point必须同时包含x，y");
+        }
+        para.points.push({
+          x: point[0],
+          y: point[1],
+        });
+      }
+      resultPara.push(para);
+    }
+    return this._gestures(resultPara);
+  };
+  autobot.getScreenDocument = function () {
+    let xmlStr = this.screenXml();
+    let doc = cheerio.load(xmlStr, {
+      normalizeWhitespace: true,
+      xmlMode: true,
+    });
+    return doc;
+  };
+  autobot.querySelectorAll = function (selector, option) {
+    option = option || {};
+    const $ = this.getScreenDocument(device);
+    let nodes = [];
+    try {
+      nodes = $(`${selector}`);
+    } catch (e) {
+      console.error(`查找出错：${selector}`);
+    }
+    let result = [];
+    for (let item of nodes) {
+      let bounds = $(item).attr("bound");
+      let text = $(item).attr("text");
+      bounds = bounds.split(",").map((item) => {
+        let result = parseInt(item);
+        return isNaN(result) ? 0 : result;
+      });
+      let [x1, y1, x2, y2] = bounds;
+      if (option.region) {
+        let { x1: rx1, y1: ry1, x2: rx2, y2: ry2 } = option.region;
+        if (!(x1 >= rx1 && y1 >= ry1 && x1 < rx2 && y1 < ry2)) {
+          continue;
+        }
+      }
+      let mx = x1 + (x2 - x1) / 2;
+      let my = y1 + (y2 - y1) / 2;
+      item.bounds = {
+        mx,
+        my,
+        x1,
+        y1,
+        x2,
+        y2,
+      };
+      item.text = text;
+      result.push(item);
+    }
+    return result;
+  };
+  autobot.querySelector = function (selector, option) {
+    option = option || {};
+    const result = this.querySelectorAll(selector, option);
+    if (result.length > 0) {
+      return result[0];
+    }
+    return null;
+  };
+  autobot.waitForSelector = function (selector, option) {
+    option = option || {};
+    let retry = option.retry || 10;
+    for (let i = 0; i < retry; i++) {
+      let nodes = this.querySelectorAll(selector, option);
+      if (nodes.length > 0) {
+        return true;
+      }
+      sleep(500);
+    }
+    console.error(`未找到${selector}对应的元素`);
+    return false;
+  };
+  autobot.findTextAll = function (searchStr, option) {
+    option = option || {};
+    let selector;
+    if (searchStr.includes("$")) {
+      searchStr = searchStr
+        .split("$")
+        .filter(Boolean)
+        .map((item) => {
+          return option.accurate ? `[text="${item}"]` : `[text*="${item}"]`;
+        })
+        .join();
+      selector = "*" + searchStr;
+    } else {
+      selector = option.accurate
+        ? `*[text="${searchStr}"]`
+        : `*[text*="${searchStr}"]`;
+    }
+    let nodes = this.querySelectorAll(selector, option);
+    return nodes;
+  };
+  autobot.findText = function (selector, option) {
+    option = option || {};
+    const result = this.findTextAll(selector, option);
+    if (result.length > 0) {
+      return result[0];
+    }
+    return null;
+  };
+  autobot.waitForText = function (searchStr, option) {
+    option = option || {};
+    let retry = option.retry || 10;
+    for (let i = 0; i < retry; i++) {
+      let nodes = this.findTextAll(searchStr, option);
+      if (nodes.length > 0) {
+        return true;
+      }
+      sleep(500);
+    }
+    console.error(`未找到文本:(${searchStr})对应的元素`);
+    return false;
   };
 
   return autobot;

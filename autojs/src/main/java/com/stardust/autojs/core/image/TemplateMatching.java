@@ -30,11 +30,13 @@ public class TemplateMatching {
 
     public static class Match {
         public final Point point;
+        public final Rect rect;
         public final double similarity;
 
-        public Match(Point point, double similarity) {
+        public Match(Point point, double similarity, Rect rect) {
             this.point = point;
             this.similarity = similarity;
+            this.rect = rect;
         }
 
         @Override
@@ -209,7 +211,7 @@ public class TemplateMatching {
 
     private static void getBestMatched(Mat tmResult, Mat template, int matchMethod, float weakThreshold, List<Match> outResult, int limit, Rect rect) {
         for (int i = 0; i < limit; i++) {
-            Match bestMatched = getBestMatched(tmResult, matchMethod, weakThreshold, rect);
+            Match bestMatched = getBestMatched(tmResult,template, matchMethod, weakThreshold, rect);
             if (bestMatched == null) {
                 break;
             }
@@ -222,7 +224,7 @@ public class TemplateMatching {
         }
     }
 
-    private static Match getBestMatched(Mat tmResult, int matchMethod, float weakThreshold, Rect rect) {
+    private static Match getBestMatched(Mat tmResult,Mat template, int matchMethod, float weakThreshold, Rect rect) {
         TimingLogger logger = new TimingLogger(LOG_TAG, "best_matched_point");
         Core.MinMaxLocResult mmr = Core.minMaxLoc(tmResult);
         logger.addSplit("minMaxLoc");
@@ -242,8 +244,12 @@ public class TemplateMatching {
             pos.x += rect.x;
             pos.y += rect.y;
         }
+        Point start = new Point(Math.max(0, pos.x - template.width() + 1),
+                Math.max(0, pos.y - template.height() + 1));
+        Point end = new Point(Math.min(tmResult.width(), pos.x + template.width()),
+                Math.min(tmResult.height(), pos.y + template.height()));
         logger.addSplit("value:" + value);
-        return new Match(pos, value);
+        return new Match(pos, value,new Rect(start, end));
     }
 
 
