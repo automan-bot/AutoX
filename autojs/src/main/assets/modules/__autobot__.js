@@ -810,9 +810,10 @@ module.exports = function (__runtime__, scope) {
   };
 
   //上边都是httpapi，下边对参数做autox.js适配
-  autobot.startApp = function (packageNameActivity) {
-    const mingling = `am start -n ${packageNameActivity}`;
-    return this.execCmd(mingling);
+  autobot.startApp = function (packageName) {
+    /* const mingling = `am start -n ${packageName}`;
+    return this.execCmd(mingling); */
+    return this.startPackage(packageName);
   };
   autobot.killApp = function (packageName) {
     return this.stopPackage(packageName);

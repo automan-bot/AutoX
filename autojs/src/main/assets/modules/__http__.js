@@ -204,7 +204,7 @@ module.exports = function (runtime, scope) {
     var body = res.body();
     r.body.string = function () {
       var responseBodyCopy = res.peekBody(Long.MAX_VALUE);
-      responseBodyCopy.string();
+      return responseBodyCopy.string();
     };
     r.body.bytes = function () {
       var responseBodyCopy = res.peekBody(Long.MAX_VALUE);
