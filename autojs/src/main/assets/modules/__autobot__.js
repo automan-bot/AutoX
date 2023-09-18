@@ -358,7 +358,7 @@ module.exports = function (__runtime__, scope) {
       params: para,
       responseType: "arraybuffer",
     });
-    return axiosResponse.body.json().bytes();
+    return axiosResponse.body.bytes();
   };
   autobot.screenRotation = function (para) {
     const axiosResponse = this._request({
@@ -368,7 +368,8 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data;
   };
-  autobot.getAllContact = function (para) {
+  autobot.getAllContact = function (phoneNumber) {
+    phoneNumber = phoneNumber || "*";
     const axiosResponse = this._request({
       url: this.urlMap["getAllContact"],
       method: "get",
@@ -376,11 +377,13 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data;
   };
-  autobot.deleteContact = function (para) {
+  autobot.deleteContact = function (phoneNumber) {
     const axiosResponse = this._request({
       url: this.urlMap["deleteContact"],
       method: "get",
-      params: para,
+      params: {
+        number: phoneNumber,
+      },
     });
     return Number(axiosResponse.body.json().data);
   };
@@ -392,11 +395,11 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data;
   };
-  autobot.startRecoreScreen = function (para) {
+  autobot.startRecoreScreen = function (limit) {
     const axiosResponse = this._request({
       url: this.urlMap["startRecoreScreen"],
       method: "get",
-      params: para,
+      params: { limit: limit },
     });
     return axiosResponse.body.json().data == "1";
   };
@@ -439,20 +442,21 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data;
   };
-  autobot.getAllSms = function (number) {
-    number = number || "*";
+  autobot.getAllSms = function (phoneNumber) {
+    phoneNumber = phoneNumber || "*";
     const axiosResponse = this._request({
       url: this.urlMap["getAllSms"],
       method: "get",
-      params: { number: number },
+      params: { number: phoneNumber },
     });
+    return axiosResponse.body.json().data;
   };
-  autobot.deleteSms = function (number) {
-    number = number || "*";
+  autobot.deleteSms = function (phoneNumber) {
+    phoneNumber = phoneNumber || "*";
     const axiosResponse = this._request({
       url: this.urlMap["deleteSms"],
       method: "get",
-      params: { number: number },
+      params: { number: phoneNumber },
     });
     return Number(axiosResponse.body.json().data);
   };
