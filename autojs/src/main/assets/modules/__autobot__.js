@@ -278,7 +278,7 @@ module.exports = function (__runtime__, scope) {
     }
     return r;
   };
-  autobot.hello = function () {
+  autobot.hello = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["hello"],
       method: "get",
@@ -286,7 +286,7 @@ module.exports = function (__runtime__, scope) {
     });
     return !!axiosResponse.body.string();
   };
-  autobot.version = function () {
+  autobot.version = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["version"],
       method: "get",
@@ -294,7 +294,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.string();
   };
-  autobot.getActiveInfo = function () {
+  autobot.getActiveInfo = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["getActiveInfo"],
       method: "get",
@@ -302,7 +302,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data;
   };
-  autobot.getDeviceId = function () {
+  autobot.getDeviceId = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["getDeviceId"],
       method: "get",
@@ -310,7 +310,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data;
   };
-  autobot.screenInfo = function () {
+  autobot.screenInfo = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["screenInfo"],
       method: "get",
@@ -318,7 +318,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data;
   };
-  autobot.getSystemInfo = function (ara) {
+  autobot.getSystemInfo = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["getSystemInfo"],
       method: "get",
@@ -326,7 +326,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data;
   };
-  autobot.screenJson = function () {
+  autobot.screenJson = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["screenJson"],
       method: "get",
@@ -334,7 +334,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data;
   };
-  autobot.screenXml = function () {
+  autobot.screenXml = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["screenXml"],
       method: "get",
@@ -342,7 +342,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data;
   };
-  autobot.screenShotBase64 = function () {
+  autobot.screenShotBase64 = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["screenShotBase64"],
       method: "get",
@@ -350,7 +350,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data;
   };
-  autobot.screenShot = function () {
+  autobot.screenShot = function (para) {
     // const result=this.urlMap["screenShot"]
     const axiosResponse = this._request({
       url: this.urlMap["screenShot"],
@@ -360,7 +360,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().bytes();
   };
-  autobot.screenRotation = function () {
+  autobot.screenRotation = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["screenRotation"],
       method: "get",
@@ -368,7 +368,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data;
   };
-  autobot.getAllContact = function () {
+  autobot.getAllContact = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["getAllContact"],
       method: "get",
@@ -376,7 +376,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data;
   };
-  autobot.deleteContact = function () {
+  autobot.deleteContact = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["deleteContact"],
       method: "get",
@@ -384,7 +384,7 @@ module.exports = function (__runtime__, scope) {
     });
     return Number(axiosResponse.body.json().data);
   };
-  autobot.getClipText = function () {
+  autobot.getClipText = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["getClipText"],
       method: "get",
@@ -392,7 +392,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data;
   };
-  autobot.startRecoreScreen = function () {
+  autobot.startRecoreScreen = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["startRecoreScreen"],
       method: "get",
@@ -400,7 +400,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data == "1";
   };
-  autobot.stopRecoreScreen = function () {
+  autobot.stopRecoreScreen = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["stopRecoreScreen"],
       method: "get",
@@ -408,7 +408,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data == "1";
   };
-  autobot.turnScreenOff = function () {
+  autobot.turnScreenOff = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["turnScreenOff"],
       method: "get",
@@ -423,7 +423,7 @@ module.exports = function (__runtime__, scope) {
       params: para,
     });
   };
-  autobot.checkNotification = function () {
+  autobot.checkNotification = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["checkNotification"],
       method: "get",
@@ -431,7 +431,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data == "1";
   };
-  autobot.getIp = function () {
+  autobot.getIp = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["getIp"],
       method: "get",
@@ -467,7 +467,7 @@ module.exports = function (__runtime__, scope) {
     const baseDownloadUrl = this.urlMap["download"];
     return baseDownloadUrl + "?path=" + encodeURIComponent(path);
   };
-  autobot.getDisplayName = function () {
+  autobot.getDisplayName = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["getDisplayName"],
       method: "get",
@@ -475,7 +475,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data;
   };
-  autobot.getTopActivity = function () {
+  autobot.getTopActivity = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["getTopActivity"],
       method: "get",
@@ -515,7 +515,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data == "1";
   };
-  autobot.getAllPackage = function () {
+  autobot.getAllPackage = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["getAllPackage"],
       method: "get",
@@ -531,7 +531,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data;
   };
-  autobot.stopMusic = function () {
+  autobot.stopMusic = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["stopMusic"],
       method: "get",
@@ -539,7 +539,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data == "1";
   };
-  autobot.cancelAllNotifications = function () {
+  autobot.cancelAllNotifications = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["cancelAllNotifications"],
       method: "get",
@@ -555,7 +555,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data;
   };
-  autobot.endCall = function () {
+  autobot.endCall = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["endCall"],
       method: "get",
@@ -754,7 +754,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data == "1";
   };
-  autobot.listFile = function (para) {
+  autobot.listFile = function (path) {
     const axiosResponse = this._request({
       url: this.urlMap["listFile"],
       headers: {
