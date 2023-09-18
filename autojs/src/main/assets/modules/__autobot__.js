@@ -806,7 +806,22 @@ module.exports = function (__runtime__, scope) {
   };
 
   //上边都是httpapi，下边对参数做autox.js适配
-  //单指手势
+  autobot.startApp = function (packageNameActivity) {
+    const mingling = `am start -n ${packageNameActivity}`;
+    return this.execCmd(mingling);
+  };
+  autobot.killApp = function (packageName) {
+    return this.stopPackage(packageName);
+  };
+  autobot.tap = function (x, y) {
+    return this.click(x, y);
+  };
+  autobot.inputKey = function (keyCode) {
+    return this.pressKeyCode(x, y);
+  };
+  autobot.execAdbShell = function (shellStr) {
+    return this.execCmd(shellStr);
+  };
   autobot.gesture = function () {
     if (arguments.length < 2) throw new Error("gesture函数至少需要2个参数");
     let para = {
@@ -972,5 +987,70 @@ module.exports = function (__runtime__, scope) {
     return false;
   };
 
+  autobot.captureScreen = function () {
+    return images.load(url);
+  };
+
+  autobot.findImage = function (base64Img, option) {
+    option = option || {};
+    options.max = 1;
+    let srcImg = captureScreen();
+    let tmpImg = images.fromBase64(base64Img);
+    if (option.region) {
+      option.region = convertRegion(srcImg, option.region);
+    }
+    return images.matchTemplate(srcImg, tmpImg, option);
+  };
+
+  autobot.findColor = function (color, option) {
+    option = option || {};
+    let srcImg = captureScreen();
+    if (option.region) {
+      option.region = convertRegion(srcImg, option.region);
+    }
+    return images.findColor(srcImg, color, option);
+  };
+
+  autobot.findAllPointsForColor = function (color, option) {
+    option = option || {};
+    let srcImg = captureScreen();
+    if (option.region) {
+      option.region = convertRegion(srcImg, option.region);
+    }
+    return images.findAllPointsForColor(srcImg, color, option);
+  };
+  autobot.findMultiColors = function (firstColor, paths, options) {
+    option = option || {};
+    let srcImg = captureScreen();
+    if (option.region) {
+      option.region = convertRegion(srcImg, option.region);
+    }
+    return images.findMultiColors(srcImg, firstColor, paths, options);
+  };
+
+  function convertRegion(image, region) {
+    let { x1, y1, x2, y2 } = region;
+    let { sx1, sy1 } = getScreenXY(image, x1, y1);
+    let { sx1: sx2, sy1: sy2 } = getScreenXY(image, x2, y2);
+    let xx2 = Math.round(sx2 - sx1);
+    let yy2 = Math.round(sy2 - sy1);
+    return [sx1, sy1, xx2, yy2];
+  }
+  function getScreenXY(image, x, y) {
+    let screenWidth = image.width;
+    let screenHeight = image.height;
+    let sx1 = x;
+    let sy1 = y;
+    if (x <= 1) {
+      sx1 = Math.round(screenWidth * x);
+    }
+    if (y <= 1) {
+      sy1 = Math.round(screenHeight * y);
+    }
+    return {
+      sx1,
+      sy1,
+    };
+  }
   return autobot;
 };
