@@ -841,6 +841,13 @@ module.exports = function (__runtime__, scope) {
   autobot.execAdbShell = function (shellStr) {
     return this.execCmd(shellStr);
   };
+  autobot.timeout = function (timeout) {
+    sleep(timeout);
+  };
+  autobot.timeout2 = function (startTime, endTime) {
+    let time = Math.floor(Math.random() * (endTime - startTime) + startTime);
+    sleep(time * 1000);
+  };
   autobot.gesture = function () {
     if (arguments.length < 2) throw new Error("gesture函数至少需要2个参数");
     let para = {
@@ -928,8 +935,8 @@ module.exports = function (__runtime__, scope) {
           continue;
         }
       }
-      let mx = x1 + (x2 - x1) / 2;
-      let my = y1 + (y2 - y1) / 2;
+      let mx = Math.round(x1 + (x2 - x1) / 2);
+      let my = Math.round(y1 + (y2 - y1) / 2);
       item.bounds = {
         mx,
         my,
