@@ -144,7 +144,9 @@ module.exports = function (runtime, scope) {
       options.contentType == "application/json" ||
       options.contentType == "application/json;charset=UTF-8"
     ) {
+      console.log("srcData", data);
       options.body = JSON.stringify(data);
+      console.log("jsonData", options.body);
     } else {
       options.body = data;
     }
@@ -166,6 +168,7 @@ module.exports = function (runtime, scope) {
   }
 
   function parseBody(options, body) {
+    console.log("reqBody:", body);
     if (typeof body == "string") {
       body = RequestBody.create(MediaType.parse(options.contentType), body);
     } else if (body instanceof RequestBody) {
@@ -212,7 +215,8 @@ module.exports = function (runtime, scope) {
     };
     r.body.json = function () {
       var responseBodyCopy = res.peekBody(Long.MAX_VALUE);
-      return JSON.parse(responseBodyCopy.string());
+      var jsonStr = responseBodyCopy.string();
+      return JSON.parse(jsonStr);
     };
     r.body.contentType = body.contentType();
     r.request = res.request();

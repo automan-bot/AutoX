@@ -1,3 +1,10 @@
+/**
+ * autobot无需无障碍，通过在adb shell和root shell或集成在系统内，运行一个服务端调用androidAPI，毫秒级的相应速度
+ * autobot文档: http://doc.tntok.top
+ * @param {*} __runtime__
+ * @param {*} scope
+ * @returns
+ */
 module.exports = function (__runtime__, scope) {
   importPackage(Packages["okhttp3"]);
   const cheerio = require("cheerio");
@@ -235,9 +242,13 @@ module.exports = function (__runtime__, scope) {
       Pragma: "no-cache",
       Expires: "0",
     };
-    if (prop.headers && prop.headers["Content-Type"]) {
+    /*     if (prop.headers && prop.headers["Content-Type"]) {
       prop.contentType = prop.headers["Content-Type"];
-    }
+    } */
+    let contentType =
+      prop.headers && prop.headers["Content-Type"]
+        ? prop.headers["Content-Type"]
+        : null;
     let headers = Object.assign(defaultHeaders, prop.headers || {});
 
     if (!prop.url) throw new Error("url is not null");
@@ -254,14 +265,17 @@ module.exports = function (__runtime__, scope) {
         .join("&");
       let newUrl = query ? `${url}?${query}` : url;
       try {
-        r = http.get(newUrl, { headers: headers });
+        r = http.get(newUrl, { headers: headers, contentType: contentType });
       } catch (e) {
         console.error(e);
       }
     } else if (prop.method == "post") {
       let data = prop.data || {};
       try {
-        r = http.post(url, data, { headers: headers });
+        r = http.post(url, data, {
+          headers: headers,
+          contentType: contentType,
+        });
       } catch (e) {
         console.error(e);
       }
@@ -271,6 +285,7 @@ module.exports = function (__runtime__, scope) {
     if (r) {
       try {
         let res = r.body.json();
+        console.log(res);
         if (res.data.code === 0 && this.mErrorListener) {
           this.mErrorListener(res.data.msg);
         }
