@@ -285,7 +285,6 @@ module.exports = function (__runtime__, scope) {
     if (r) {
       try {
         let res = r.body.json();
-        console.log(res);
         if (res.data.code === 0 && this.mErrorListener) {
           this.mErrorListener(res.data.msg);
         }
