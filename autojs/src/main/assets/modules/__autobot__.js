@@ -829,6 +829,10 @@ module.exports = function (__runtime__, scope) {
     return this.execCmd(mingling); */
     return this.startPackage(packageName);
   };
+  autobot.unInstallApp = function (packageName) {
+    const mingling = `pm uninstall ${packageName}`;
+    return this.execCmd(mingling);
+  };
   autobot.killApp = function (packageName) {
     return this.stopPackage(packageName);
   };
@@ -921,12 +925,13 @@ module.exports = function (__runtime__, scope) {
       console.error(`查找出错：${selector}`);
     }
     let result = [];
-    for (let item of nodes) {
+    for (let i = 0; i < nodes.length; i++) {
+      let item = nodes[i];
       let bounds = $(item).attr("bound");
       let text = $(item).attr("text");
       bounds = bounds.split(",").map((item) => {
-        let result = parseInt(item);
-        return isNaN(result) ? 0 : result;
+        let wz = parseInt(item);
+        return isNaN(wz) ? 0 : wz;
       });
       let [x1, y1, x2, y2] = bounds;
       if (option.region) {
