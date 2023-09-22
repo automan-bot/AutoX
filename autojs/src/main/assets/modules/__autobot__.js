@@ -8,7 +8,7 @@
 module.exports = function (__runtime__, scope) {
   importPackage(Packages["okhttp3"]);
   const cheerio = require("cheerio");
-  function ScreenInfo() {
+  function ScreenInfo(iScreenInfo) {
     this.width = iScreenInfo.width;
     this.height = iScreenInfo.height;
     this.rotation = iScreenInfo.rotation;
@@ -192,7 +192,7 @@ module.exports = function (__runtime__, scope) {
           let { action, value } = JSON.parse(msg);
           switch (action) {
             case 1:
-              _that._onScreenOrentationChange(screenInfo);
+              _that._onScreenOrentationChange(new ScreenInfo(value));
               break;
             case 2:
               _that._onNotificationChange(value);
@@ -330,7 +330,8 @@ module.exports = function (__runtime__, scope) {
       method: "get",
       params: para,
     });
-    return axiosResponse.body.json().data;
+    let info = axiosResponse.body.json().data;
+    return new ScreenInfo(info);
   };
   autobot.getSystemInfo = function (para) {
     const axiosResponse = this._request({
@@ -825,9 +826,21 @@ module.exports = function (__runtime__, scope) {
 
   //上边都是httpapi，下边对参数做autox.js适配
   autobot.startApp = function (packageName) {
-    /* const mingling = `am start -n ${packageName}`;
-    return this.execCmd(mingling); */
-    return this.startPackage(packageName);
+    if (packageName.includes("/")) {
+      const mingling = `am start -n ${packageName}`;
+      return this.execCmd(mingling);
+    } else {
+      return this.startPackage(packageName);
+    }
+  };
+  autobot.installApk = function (apkPath) {
+    if (!files.exists(apkPath)) {
+      throw new Error("apk file not found");
+    }
+    // let fileName=files.getName(apkPath)
+    let newPath = `/data/local/tmp/waitInstall.apk`;
+    const mingling = `mv '${apkPath}' '${newPath}'\npm install -r -d '${newPath}'\nrm '${newPath}'`;
+    return this.execCmd(mingling);
   };
   autobot.unInstallApp = function (packageName) {
     const mingling = `pm uninstall ${packageName}`;
@@ -917,6 +930,24 @@ module.exports = function (__runtime__, scope) {
   };
   autobot.querySelectorAll = function (selector, option) {
     option = option || {};
+    //对百分比的region进行转换
+    if (option.region) {
+      let { x1: sx1, y1: sy1, x2: sx2, y2: sy2 } = option.region;
+      if (sx1 <= 1 || sy1 <= 1 || sx2 <= 1 || sy2 <= 1) {
+        let screenInfo = this.screenInfo();
+        let [x1, y1, x2, y2] = convertRegion(
+          screenInfo.width,
+          screenInfo.height,
+          option.region
+        );
+        option.region = {
+          x1,
+          y1,
+          x2,
+          y2,
+        };
+      }
+    }
     const $ = this.getScreenDocument(device);
     let nodes = [];
     try {
@@ -1028,7 +1059,11 @@ module.exports = function (__runtime__, scope) {
     let srcImg = captureScreen();
     let tmpImg = images.fromBase64(base64Img);
     if (option.region) {
-      option.region = convertRegion(srcImg, option.region);
+      option.region = convertRegion(
+        srcImg.getWidth(),
+        srcImg.getHeight(),
+        option.region
+      );
     }
     return images.matchTemplate(srcImg, tmpImg, option);
   };
@@ -1037,7 +1072,11 @@ module.exports = function (__runtime__, scope) {
     option = option || {};
     let srcImg = captureScreen();
     if (option.region) {
-      option.region = convertRegion(srcImg, option.region);
+      option.region = convertRegion(
+        srcImg.getWidth(),
+        srcImg.getHeight(),
+        option.region
+      );
     }
     return images.findColor(srcImg, color, option);
   };
@@ -1046,7 +1085,11 @@ module.exports = function (__runtime__, scope) {
     option = option || {};
     let srcImg = captureScreen();
     if (option.region) {
-      option.region = convertRegion(srcImg, option.region);
+      option.region = convertRegion(
+        srcImg.getWidth(),
+        srcImg.getHeight(),
+        option.region
+      );
     }
     return images.findAllPointsForColor(srcImg, color, option);
   };
@@ -1054,22 +1097,26 @@ module.exports = function (__runtime__, scope) {
     option = option || {};
     let srcImg = captureScreen();
     if (option.region) {
-      option.region = convertRegion(srcImg, option.region);
+      option.region = convertRegion(
+        srcImg.getWidth(),
+        srcImg.getHeight(),
+        option.region
+      );
     }
     return images.findMultiColors(srcImg, firstColor, paths, options);
   };
 
-  function convertRegion(image, region) {
+  function convertRegion(sw, sh, region) {
     let { x1, y1, x2, y2 } = region;
-    let { sx1, sy1 } = getScreenXY(image, x1, y1);
-    let { sx1: sx2, sy1: sy2 } = getScreenXY(image, x2, y2);
+    let { sx1, sy1 } = getScreenXY(sw, sh, x1, y1);
+    let { sx1: sx2, sy1: sy2 } = getScreenXY(sw, sh, x2, y2);
     let xx2 = Math.round(sx2 - sx1);
     let yy2 = Math.round(sy2 - sy1);
     return [sx1, sy1, xx2, yy2];
   }
-  function getScreenXY(image, x, y) {
-    let screenWidth = image.width;
-    let screenHeight = image.height;
+  function getScreenXY(sw, sh, x, y) {
+    let screenWidth = sw;
+    let screenHeight = sh;
     let sx1 = x;
     let sy1 = y;
     if (x <= 1) {
