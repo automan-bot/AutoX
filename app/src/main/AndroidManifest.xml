@@ -658,7 +658,7 @@
         </receiver>
         <receiver
             android:name="org.autojs.autojs.timing.TaskReceiver"
-            android:exported="false">
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.stardust.autojs.action.task" />
             </intent-filter>
