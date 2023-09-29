@@ -1,6 +1,14 @@
+/**
+ * autobot无需无障碍，通过在adb shell和root shell或集成在系统内，运行一个服务端调用androidAPI，毫秒级的相应速度
+ * autobot文档: http://doc.tntok.top
+ * @param {*} __runtime__
+ * @param {*} scope
+ * @returns
+ */
 module.exports = function (__runtime__, scope) {
   importPackage(Packages["okhttp3"]);
-  function ScreenInfo() {
+  const cheerio = require("cheerio");
+  function ScreenInfo(iScreenInfo) {
     this.width = iScreenInfo.width;
     this.height = iScreenInfo.height;
     this.rotation = iScreenInfo.rotation;
@@ -184,7 +192,7 @@ module.exports = function (__runtime__, scope) {
           let { action, value } = JSON.parse(msg);
           switch (action) {
             case 1:
-              _that._onScreenOrentationChange(screenInfo);
+              _that._onScreenOrentationChange(new ScreenInfo(value));
               break;
             case 2:
               _that._onNotificationChange(value);
@@ -234,9 +242,13 @@ module.exports = function (__runtime__, scope) {
       Pragma: "no-cache",
       Expires: "0",
     };
-    if (prop.headers && prop.headers["Content-Type"]) {
+    /*     if (prop.headers && prop.headers["Content-Type"]) {
       prop.contentType = prop.headers["Content-Type"];
-    }
+    } */
+    let contentType =
+      prop.headers && prop.headers["Content-Type"]
+        ? prop.headers["Content-Type"]
+        : null;
     let headers = Object.assign(defaultHeaders, prop.headers || {});
 
     if (!prop.url) throw new Error("url is not null");
@@ -253,14 +265,17 @@ module.exports = function (__runtime__, scope) {
         .join("&");
       let newUrl = query ? `${url}?${query}` : url;
       try {
-        r = http.get(newUrl, { headers: headers });
+        r = http.get(newUrl, { headers: headers, contentType: contentType });
       } catch (e) {
         console.error(e);
       }
     } else if (prop.method == "post") {
       let data = prop.data || {};
       try {
-        r = http.post(url, data, { headers: headers });
+        r = http.post(url, data, {
+          headers: headers,
+          contentType: contentType,
+        });
       } catch (e) {
         console.error(e);
       }
@@ -277,7 +292,7 @@ module.exports = function (__runtime__, scope) {
     }
     return r;
   };
-  autobot.hello = function () {
+  autobot.hello = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["hello"],
       method: "get",
@@ -285,7 +300,7 @@ module.exports = function (__runtime__, scope) {
     });
     return !!axiosResponse.body.string();
   };
-  autobot.version = function () {
+  autobot.version = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["version"],
       method: "get",
@@ -293,7 +308,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.string();
   };
-  autobot.getActiveInfo = function () {
+  autobot.getActiveInfo = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["getActiveInfo"],
       method: "get",
@@ -301,7 +316,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data;
   };
-  autobot.getDeviceId = function () {
+  autobot.getDeviceId = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["getDeviceId"],
       method: "get",
@@ -309,15 +324,16 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data;
   };
-  autobot.screenInfo = function () {
+  autobot.screenInfo = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["screenInfo"],
       method: "get",
       params: para,
     });
-    return axiosResponse.body.json().data;
+    let info = axiosResponse.body.json().data;
+    return new ScreenInfo(info);
   };
-  autobot.getSystemInfo = function (ara) {
+  autobot.getSystemInfo = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["getSystemInfo"],
       method: "get",
@@ -325,7 +341,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data;
   };
-  autobot.screenJson = function () {
+  autobot.screenJson = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["screenJson"],
       method: "get",
@@ -333,7 +349,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data;
   };
-  autobot.screenXml = function () {
+  autobot.screenXml = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["screenXml"],
       method: "get",
@@ -341,7 +357,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data;
   };
-  autobot.screenShotBase64 = function () {
+  autobot.screenShotBase64 = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["screenShotBase64"],
       method: "get",
@@ -349,7 +365,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data;
   };
-  autobot.screenShot = function () {
+  autobot.screenShot = function (para) {
     // const result=this.urlMap["screenShot"]
     const axiosResponse = this._request({
       url: this.urlMap["screenShot"],
@@ -357,9 +373,9 @@ module.exports = function (__runtime__, scope) {
       params: para,
       responseType: "arraybuffer",
     });
-    return axiosResponse.body.json().bytes();
+    return axiosResponse.body.bytes();
   };
-  autobot.screenRotation = function () {
+  autobot.screenRotation = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["screenRotation"],
       method: "get",
@@ -367,7 +383,8 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data;
   };
-  autobot.getAllContact = function () {
+  autobot.getAllContact = function (phoneNumber) {
+    phoneNumber = phoneNumber || "*";
     const axiosResponse = this._request({
       url: this.urlMap["getAllContact"],
       method: "get",
@@ -375,15 +392,17 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data;
   };
-  autobot.deleteContact = function () {
+  autobot.deleteContact = function (phoneNumber) {
     const axiosResponse = this._request({
       url: this.urlMap["deleteContact"],
       method: "get",
-      params: para,
+      params: {
+        number: phoneNumber,
+      },
     });
     return Number(axiosResponse.body.json().data);
   };
-  autobot.getClipText = function () {
+  autobot.getClipText = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["getClipText"],
       method: "get",
@@ -391,15 +410,15 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data;
   };
-  autobot.startRecoreScreen = function () {
+  autobot.startRecoreScreen = function (limit) {
     const axiosResponse = this._request({
       url: this.urlMap["startRecoreScreen"],
       method: "get",
-      params: para,
+      params: { limit: limit },
     });
     return axiosResponse.body.json().data == "1";
   };
-  autobot.stopRecoreScreen = function () {
+  autobot.stopRecoreScreen = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["stopRecoreScreen"],
       method: "get",
@@ -407,7 +426,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data == "1";
   };
-  autobot.turnScreenOff = function () {
+  autobot.turnScreenOff = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["turnScreenOff"],
       method: "get",
@@ -422,7 +441,7 @@ module.exports = function (__runtime__, scope) {
       params: para,
     });
   };
-  autobot.checkNotification = function () {
+  autobot.checkNotification = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["checkNotification"],
       method: "get",
@@ -430,7 +449,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data == "1";
   };
-  autobot.getIp = function () {
+  autobot.getIp = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["getIp"],
       method: "get",
@@ -438,20 +457,21 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data;
   };
-  autobot.getAllSms = function (number) {
-    number = number || "*";
+  autobot.getAllSms = function (phoneNumber) {
+    phoneNumber = phoneNumber || "*";
     const axiosResponse = this._request({
       url: this.urlMap["getAllSms"],
       method: "get",
-      params: { number: number },
+      params: { number: phoneNumber },
     });
+    return axiosResponse.body.json().data;
   };
-  autobot.deleteSms = function (number) {
-    number = number || "*";
+  autobot.deleteSms = function (phoneNumber) {
+    phoneNumber = phoneNumber || "*";
     const axiosResponse = this._request({
       url: this.urlMap["deleteSms"],
       method: "get",
-      params: { number: number },
+      params: { number: phoneNumber },
     });
     return Number(axiosResponse.body.json().data);
   };
@@ -466,7 +486,7 @@ module.exports = function (__runtime__, scope) {
     const baseDownloadUrl = this.urlMap["download"];
     return baseDownloadUrl + "?path=" + encodeURIComponent(path);
   };
-  autobot.getDisplayName = function () {
+  autobot.getDisplayName = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["getDisplayName"],
       method: "get",
@@ -474,7 +494,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data;
   };
-  autobot.getTopActivity = function () {
+  autobot.getTopActivity = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["getTopActivity"],
       method: "get",
@@ -514,7 +534,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data == "1";
   };
-  autobot.getAllPackage = function () {
+  autobot.getAllPackage = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["getAllPackage"],
       method: "get",
@@ -530,7 +550,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data;
   };
-  autobot.stopMusic = function () {
+  autobot.stopMusic = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["stopMusic"],
       method: "get",
@@ -538,7 +558,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data == "1";
   };
-  autobot.cancelAllNotifications = function () {
+  autobot.cancelAllNotifications = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["cancelAllNotifications"],
       method: "get",
@@ -554,7 +574,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data;
   };
-  autobot.endCall = function () {
+  autobot.endCall = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["endCall"],
       method: "get",
@@ -661,7 +681,7 @@ module.exports = function (__runtime__, scope) {
   };
   autobot.click = function (x, y) {
     const axiosResponse = this._request({
-      url: this.urlMap["gestures"],
+      url: this.urlMap["click"],
       headers: {
         "Content-Type": "application/json;charset=UTF-8",
       },
@@ -672,7 +692,7 @@ module.exports = function (__runtime__, scope) {
   };
   autobot.longClick = function (x, y) {
     const axiosResponse = this._request({
-      url: this.urlMap["gestures"],
+      url: this.urlMap["longClick"],
       headers: {
         "Content-Type": "application/json;charset=UTF-8",
       },
@@ -683,7 +703,7 @@ module.exports = function (__runtime__, scope) {
   };
   autobot.press = function (x, y, duration) {
     const axiosResponse = this._request({
-      url: this.urlMap["gestures"],
+      url: this.urlMap["press"],
       headers: {
         "Content-Type": "application/json;charset=UTF-8",
       },
@@ -694,7 +714,7 @@ module.exports = function (__runtime__, scope) {
   };
   autobot.swipe = function (x1, y1, x2, y2, duration) {
     const axiosResponse = this._request({
-      url: this.urlMap["gestures"],
+      url: this.urlMap["swipe"],
       headers: {
         "Content-Type": "application/json;charset=UTF-8",
       },
@@ -709,7 +729,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data == "1";
   };
-  autobot.gestures = function (para) {
+  autobot._gestures = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["gestures"],
       headers: {
@@ -720,7 +740,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data == "1";
   };
-  autobot.gesture = function (para) {
+  autobot._gesture = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["gesture"],
       headers: {
@@ -744,7 +764,7 @@ module.exports = function (__runtime__, scope) {
   };
   autobot.delFile = function (path) {
     const axiosResponse = this._request({
-      url: this.urlMap["emptyDir"],
+      url: this.urlMap["delFile"],
       headers: {
         "Content-Type": "application/json;charset=UTF-8",
       },
@@ -753,7 +773,7 @@ module.exports = function (__runtime__, scope) {
     });
     return axiosResponse.body.json().data == "1";
   };
-  autobot.listFile = function (para) {
+  autobot.listFile = function (path) {
     const axiosResponse = this._request({
       url: this.urlMap["listFile"],
       headers: {
@@ -804,5 +824,311 @@ module.exports = function (__runtime__, scope) {
     return axiosResponse.body.json().data == "1";
   };
 
+  //上边都是httpapi，下边对参数做autox.js适配
+  autobot.startApp = function (packageName) {
+    if (packageName.includes("/")) {
+      const mingling = `am start -n ${packageName}`;
+      return this.execCmd(mingling);
+    } else {
+      return this.startPackage(packageName);
+    }
+  };
+  autobot.installApk = function (apkPath) {
+    if (!files.exists(apkPath)) {
+      throw new Error("apk file not found");
+    }
+    // let fileName=files.getName(apkPath)
+    let newPath = `/data/local/tmp/waitInstall.apk`;
+    const mingling = `mv '${apkPath}' '${newPath}'\npm install -r -d '${newPath}'\nrm '${newPath}'`;
+    return this.execCmd(mingling);
+  };
+  autobot.unInstallApp = function (packageName) {
+    const mingling = `pm uninstall ${packageName}`;
+    return this.execCmd(mingling);
+  };
+  autobot.killApp = function (packageName) {
+    return this.stopPackage(packageName);
+  };
+  autobot.tap = function (x, y) {
+    return this.click(x, y);
+  };
+  autobot.inputKey = function (keyCode) {
+    return this.pressKeyCode(x, y);
+  };
+  autobot.execAdbShell = function (shellStr) {
+    return this.execCmd(shellStr);
+  };
+  autobot.timeout = function (timeout) {
+    sleep(timeout);
+  };
+  autobot.timeout2 = function (startTime, endTime) {
+    let time = Math.floor(Math.random() * (endTime - startTime) + startTime);
+    sleep(time * 1000);
+  };
+  autobot.gesture = function () {
+    if (arguments.length < 2) throw new Error("gesture函数至少需要2个参数");
+    let para = {
+      duration: 0,
+      points: [],
+    };
+    if (typeof arguments[0] != "number") {
+      throw new Error("gesture函数第一个参数必须为number类型");
+    }
+    para.duration = arguments[0];
+    for (let i = 1; i < arguments.length; i++) {
+      let point = arguments[i];
+      if (point.length != 2) {
+        throw new Error("point必须同时包含x，y");
+      }
+      para.points.push({
+        x: point[0],
+        y: point[1],
+      });
+    }
+    return this._gesture(para);
+  };
+  //多指手势
+  autobot.gestures = function () {
+    if (!arguments.length) throw new Error("gestures函数至少需要1个参数");
+    const resultPara = [];
+    for (let gesture of arguments) {
+      let para = {
+        delay: 0,
+        duration: 0,
+        points: [],
+      };
+      let startIndex = 2;
+      if (typeof gesture[1] == "number") {
+        para.delay = gesture[0];
+        para.duration = gesture[1];
+        startIndex = 2;
+      } else {
+        para.duration = gesture[0];
+        startIndex = 1;
+      }
+      for (let i = startIndex; i < gesture.length; i++) {
+        let point = gesture[i];
+        if (point.length != 2) {
+          throw new Error("point必须同时包含x，y");
+        }
+        para.points.push({
+          x: point[0],
+          y: point[1],
+        });
+      }
+      resultPara.push(para);
+    }
+    return this._gestures(resultPara);
+  };
+  autobot.getScreenDocument = function () {
+    let xmlStr = this.screenXml();
+    let doc = cheerio.load(xmlStr, {
+      normalizeWhitespace: true,
+      xmlMode: true,
+    });
+    return doc;
+  };
+  autobot.querySelectorAll = function (selector, option) {
+    option = option || {};
+    //对百分比的region进行转换
+    if (option.region) {
+      let { x1: sx1, y1: sy1, x2: sx2, y2: sy2 } = option.region;
+      if (sx1 <= 1 || sy1 <= 1 || sx2 <= 1 || sy2 <= 1) {
+        let screenInfo = this.screenInfo();
+        let [x1, y1, x2, y2] = convertRegion(
+          screenInfo.width,
+          screenInfo.height,
+          option.region
+        );
+        option.region = {
+          x1,
+          y1,
+          x2,
+          y2,
+        };
+      }
+    }
+    const $ = this.getScreenDocument(device);
+    let nodes = [];
+    try {
+      nodes = $(`${selector}`);
+    } catch (e) {
+      console.error(`查找出错：${selector}`);
+    }
+    let result = [];
+    for (let i = 0; i < nodes.length; i++) {
+      let item = nodes[i];
+      let bounds = $(item).attr("bound");
+      let text = $(item).attr("text");
+      bounds = bounds.split(",").map((item) => {
+        let wz = parseInt(item);
+        return isNaN(wz) ? 0 : wz;
+      });
+      let [x1, y1, x2, y2] = bounds;
+      if (option.region) {
+        let { x1: rx1, y1: ry1, x2: rx2, y2: ry2 } = option.region;
+        if (!(x1 >= rx1 && y1 >= ry1 && x1 < rx2 && y1 < ry2)) {
+          continue;
+        }
+      }
+      let mx = Math.round(x1 + (x2 - x1) / 2);
+      let my = Math.round(y1 + (y2 - y1) / 2);
+      item.bounds = {
+        mx,
+        my,
+        x1,
+        y1,
+        x2,
+        y2,
+      };
+      item.text = text;
+      result.push(item);
+    }
+    return result;
+  };
+  autobot.querySelector = function (selector, option) {
+    option = option || {};
+    const result = this.querySelectorAll(selector, option);
+    if (result.length > 0) {
+      return result[0];
+    }
+    return null;
+  };
+  autobot.waitForSelector = function (selector, option) {
+    option = option || {};
+    let retry = option.retry || 10;
+    for (let i = 0; i < retry; i++) {
+      let nodes = this.querySelectorAll(selector, option);
+      if (nodes.length > 0) {
+        return true;
+      }
+      sleep(500);
+    }
+    console.error(`未找到${selector}对应的元素`);
+    return false;
+  };
+  autobot.findTextAll = function (searchStr, option) {
+    option = option || {};
+    let selector;
+    if (searchStr.includes("$")) {
+      searchStr = searchStr
+        .split("$")
+        .filter(Boolean)
+        .map((item) => {
+          return option.accurate ? `[text="${item}"]` : `[text*="${item}"]`;
+        })
+        .join();
+      selector = "*" + searchStr;
+    } else {
+      selector = option.accurate
+        ? `*[text="${searchStr}"]`
+        : `*[text*="${searchStr}"]`;
+    }
+    let nodes = this.querySelectorAll(selector, option);
+    return nodes;
+  };
+  autobot.findText = function (selector, option) {
+    option = option || {};
+    const result = this.findTextAll(selector, option);
+    if (result.length > 0) {
+      return result[0];
+    }
+    return null;
+  };
+  autobot.waitForText = function (searchStr, option) {
+    option = option || {};
+    let retry = option.retry || 10;
+    for (let i = 0; i < retry; i++) {
+      let nodes = this.findTextAll(searchStr, option);
+      if (nodes.length > 0) {
+        return true;
+      }
+      sleep(500);
+    }
+    console.error(`未找到文本:(${searchStr})对应的元素`);
+    return false;
+  };
+
+  autobot.captureScreen = function () {
+    return images.load(url);
+  };
+
+  autobot.findImage = function (base64Img, option) {
+    option = option || {};
+    options.max = 1;
+    let srcImg = captureScreen();
+    let tmpImg = images.fromBase64(base64Img);
+    if (option.region) {
+      option.region = convertRegion(
+        srcImg.getWidth(),
+        srcImg.getHeight(),
+        option.region
+      );
+    }
+    return images.matchTemplate(srcImg, tmpImg, option);
+  };
+
+  autobot.findColor = function (color, option) {
+    option = option || {};
+    let srcImg = captureScreen();
+    if (option.region) {
+      option.region = convertRegion(
+        srcImg.getWidth(),
+        srcImg.getHeight(),
+        option.region
+      );
+    }
+    return images.findColor(srcImg, color, option);
+  };
+
+  autobot.findAllPointsForColor = function (color, option) {
+    option = option || {};
+    let srcImg = captureScreen();
+    if (option.region) {
+      option.region = convertRegion(
+        srcImg.getWidth(),
+        srcImg.getHeight(),
+        option.region
+      );
+    }
+    return images.findAllPointsForColor(srcImg, color, option);
+  };
+  autobot.findMultiColors = function (firstColor, paths, options) {
+    option = option || {};
+    let srcImg = captureScreen();
+    if (option.region) {
+      option.region = convertRegion(
+        srcImg.getWidth(),
+        srcImg.getHeight(),
+        option.region
+      );
+    }
+    return images.findMultiColors(srcImg, firstColor, paths, options);
+  };
+
+  function convertRegion(sw, sh, region) {
+    let { x1, y1, x2, y2 } = region;
+    let { sx1, sy1 } = getScreenXY(sw, sh, x1, y1);
+    let { sx1: sx2, sy1: sy2 } = getScreenXY(sw, sh, x2, y2);
+    let xx2 = Math.round(sx2 - sx1);
+    let yy2 = Math.round(sy2 - sy1);
+    return [sx1, sy1, xx2, yy2];
+  }
+  function getScreenXY(sw, sh, x, y) {
+    let screenWidth = sw;
+    let screenHeight = sh;
+    let sx1 = x;
+    let sy1 = y;
+    if (x <= 1) {
+      sx1 = Math.round(screenWidth * x);
+    }
+    if (y <= 1) {
+      sy1 = Math.round(screenHeight * y);
+    }
+    return {
+      sx1,
+      sy1,
+    };
+  }
   return autobot;
 };
