@@ -3,6 +3,7 @@ package org.autojs.autojs.external;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 
 import com.stardust.autojs.execution.ExecutionConfig;
 import com.stardust.autojs.script.JavaScriptFileSource;
@@ -13,6 +14,7 @@ import com.stardust.autojs.script.StringScriptSource;
 import org.autojs.autojs.Pref;
 import org.autojs.autojs.autojs.AutoJs;
 import org.autojs.autojs.model.script.PathChecker;
+import org.autojs.autojs.tool.Base64Utils;
 
 import java.io.File;
 
@@ -35,6 +37,12 @@ public class ScriptIntents {
     public static boolean handleIntent(Context context, Intent intent) {
         String path = getPath(intent);
         String script = intent.getStringExtra(ScriptIntents.EXTRA_KEY_PRE_EXECUTE_SCRIPT);
+        try{
+            String newScript = Base64Utils.base64Decode(script);
+            if(!TextUtils.isEmpty(newScript)){
+                script=newScript;
+            }
+        }catch(Exception e){}
         int loopTimes = intent.getIntExtra(EXTRA_KEY_LOOP_TIMES, 1);
         long delay = intent.getLongExtra(EXTRA_KEY_DELAY, 0);
         long interval = intent.getLongExtra(EXTRA_KEY_LOOP_INTERVAL, 0);
