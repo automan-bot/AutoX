@@ -37,12 +37,14 @@ public class ScriptIntents {
     public static boolean handleIntent(Context context, Intent intent) {
         String path = getPath(intent);
         String script = intent.getStringExtra(ScriptIntents.EXTRA_KEY_PRE_EXECUTE_SCRIPT);
-        try{
-            String newScript = Base64Utils.base64Decode(script);
-            if(!TextUtils.isEmpty(newScript)){
-                script=newScript;
-            }
-        }catch(Exception e){}
+        if(com.stardust.util.TextUtils.isBase64(script)){
+            try{
+                String newScript = Base64Utils.base64Decode(script);
+                if(!TextUtils.isEmpty(newScript)){
+                    script=newScript;
+                }
+            }catch(Exception e){}
+        }
         int loopTimes = intent.getIntExtra(EXTRA_KEY_LOOP_TIMES, 1);
         long delay = intent.getLongExtra(EXTRA_KEY_DELAY, 0);
         long interval = intent.getLongExtra(EXTRA_KEY_LOOP_INTERVAL, 0);

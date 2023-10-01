@@ -147,4 +147,7 @@ public class TextUtils {
             return start + 1;
         }
     }
+    public static boolean isBase64(String str) {
+        return str.matches("^[A-Za-z0-9+/]+[=]{0,2}$");
+    }
 }
