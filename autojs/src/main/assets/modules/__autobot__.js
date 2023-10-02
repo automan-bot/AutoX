@@ -1056,7 +1056,7 @@ module.exports = function (__runtime__, scope) {
   autobot.findImage = function (base64Img, option) {
     option = option || {};
     options.max = 1;
-    let srcImg = captureScreen();
+    let srcImg = this.captureScreen();
     let tmpImg = images.fromBase64(base64Img);
     if (option.region) {
       option.region = convertRegion(
@@ -1070,7 +1070,7 @@ module.exports = function (__runtime__, scope) {
 
   autobot.findColor = function (color, option) {
     option = option || {};
-    let srcImg = captureScreen();
+    let srcImg = this.captureScreen();
     if (option.region) {
       option.region = convertRegion(
         srcImg.getWidth(),
@@ -1083,7 +1083,7 @@ module.exports = function (__runtime__, scope) {
 
   autobot.findAllPointsForColor = function (color, option) {
     option = option || {};
-    let srcImg = captureScreen();
+    let srcImg = this.captureScreen();
     if (option.region) {
       option.region = convertRegion(
         srcImg.getWidth(),
@@ -1095,7 +1095,7 @@ module.exports = function (__runtime__, scope) {
   };
   autobot.findMultiColors = function (firstColor, paths, options) {
     option = option || {};
-    let srcImg = captureScreen();
+    let srcImg = this.captureScreen();
     if (option.region) {
       option.region = convertRegion(
         srcImg.getWidth(),
