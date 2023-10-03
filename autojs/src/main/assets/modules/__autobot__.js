@@ -1050,12 +1050,12 @@ module.exports = function (__runtime__, scope) {
   };
 
   autobot.captureScreen = function () {
-    return images.load(url);
+    return images.load(this.urlMap["screenShot"]);
   };
 
   autobot.findImage = function (base64Img, option) {
     option = option || {};
-    options.max = 1;
+    option.max = 5;
     let srcImg = this.captureScreen();
     let tmpImg = images.fromBase64(base64Img);
     if (option.region) {
@@ -1065,7 +1065,22 @@ module.exports = function (__runtime__, scope) {
         option.region
       );
     }
-    return images.matchTemplate(srcImg, tmpImg, option);
+    const result = images.matchTemplate(srcImg, tmpImg, option);
+    const resultArr = [];
+    result.matches.forEach(function (match) {
+      resultArr.push({
+        confidence: match.similarity,
+        result: {
+          x: match.point.x,
+          y: match.point.y,
+          width: match.rect.width,
+          height: match.rect.height,
+          mx: Math.round(match.point.x + match.rect.width / 2),
+          my: Math.round(match.point.y + match.rect.height / 2),
+        },
+      });
+    });
+    return resultArr;
   };
 
   autobot.findColor = function (color, option) {
@@ -1093,7 +1108,7 @@ module.exports = function (__runtime__, scope) {
     }
     return images.findAllPointsForColor(srcImg, color, option);
   };
-  autobot.findMultiColors = function (firstColor, paths, options) {
+  autobot.findMultiColors = function (firstColor, paths, option) {
     option = option || {};
     let srcImg = this.captureScreen();
     if (option.region) {
@@ -1103,7 +1118,7 @@ module.exports = function (__runtime__, scope) {
         option.region
       );
     }
-    return images.findMultiColors(srcImg, firstColor, paths, options);
+    return images.findMultiColors(srcImg, firstColor, paths, option);
   };
 
   function convertRegion(sw, sh, region) {

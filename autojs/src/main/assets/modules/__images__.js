@@ -12,16 +12,8 @@ module.exports = function (runtime, scope) {
       if (Array.isArray(list)) {
         this.matches = list;
       } else {
-        this.matches = runtime.bridges.bridges.toArray(list);
+        this.matches = runtime.bridges.toArray(list);
       }
-      this.matches.forEach(function (match) {
-        match.result = {
-          x: match.point.x,
-          y: match.point.y,
-          mx: Math.round(match.rect.x + match.rect.width / 2),
-          my: Math.round(match.rect.y + match.rect.height / 2),
-        };
-      });
       this.__defineGetter__("points", () => {
         if (typeof this.__points__ == "undefined") {
           this.__points__ = this.matches.map((m) => m.point);

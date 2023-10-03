@@ -44,6 +44,7 @@ public class TemplateMatching {
             return "Match{" +
                     "point=" + point +
                     ", similarity=" + similarity +
+                    ", rect=" + rect +
                     '}';
         }
     }
