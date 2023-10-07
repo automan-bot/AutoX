@@ -922,6 +922,7 @@ module.exports = function (__runtime__, scope) {
   };
   autobot.getScreenDocument = function () {
     let xmlStr = this.screenXml();
+    console.log(xmlStr);
     let doc = cheerio.load(xmlStr, {
       normalizeWhitespace: true,
       xmlMode: true,
@@ -955,6 +956,7 @@ module.exports = function (__runtime__, scope) {
     } catch (e) {
       console.error(`查找出错：${selector}`);
     }
+    console.log("找到元素", selector, nodes.length, nodes);
     let result = [];
     for (let i = 0; i < nodes.length; i++) {
       let item = nodes[i];
@@ -984,6 +986,8 @@ module.exports = function (__runtime__, scope) {
       item.text = text;
       result.push(item);
     }
+    console.log("找到元素", selector, result.length, result);
+
     return result;
   };
   autobot.querySelector = function (selector, option) {
