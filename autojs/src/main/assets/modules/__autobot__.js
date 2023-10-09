@@ -32,6 +32,7 @@ module.exports = function (__runtime__, scope) {
     startRecoreScreen: "/startRecoreScreen",
     stopRecoreScreen: "/stopRecoreScreen",
     turnScreenOff: "/turnScreenOff",
+    turnScreenOn: "/turnScreenOn",
     exit: "/exit",
     checkNotification: "/checkNotification",
     getIp: "/getIp",
@@ -429,6 +430,14 @@ module.exports = function (__runtime__, scope) {
   autobot.turnScreenOff = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["turnScreenOff"],
+      method: "get",
+      params: para,
+    });
+    return axiosResponse.body.json().data == "1";
+  };
+  autobot.turnScreenOn = function (para) {
+    const axiosResponse = this._request({
+      url: this.urlMap["turnScreenOn"],
       method: "get",
       params: para,
     });
