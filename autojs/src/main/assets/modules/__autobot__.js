@@ -29,6 +29,7 @@ module.exports = function (__runtime__, scope) {
     getAllContact: "/getAllContact",
     deleteContact: "/deleteContact",
     getClipText: "/getClipText",
+    clearText: "/clearText",
     startRecoreScreen: "/startRecoreScreen",
     stopRecoreScreen: "/stopRecoreScreen",
     turnScreenOff: "/turnScreenOff",
@@ -410,6 +411,14 @@ module.exports = function (__runtime__, scope) {
       params: para,
     });
     return axiosResponse.body.json().data;
+  };
+  autobot.clearText = function (para) {
+    const axiosResponse = this._request({
+      url: this.urlMap["clearText"],
+      method: "get",
+      params: para,
+    });
+    return axiosResponse.body.json().data == "1";
   };
   autobot.startRecoreScreen = function (limit) {
     const axiosResponse = this._request({
