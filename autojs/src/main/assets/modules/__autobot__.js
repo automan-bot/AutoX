@@ -871,7 +871,7 @@ module.exports = function (__runtime__, scope) {
     return this.click(x, y);
   };
   autobot.inputKey = function (keyCode) {
-    return this.pressKeyCode(x, y);
+    return this.pressKeyCode(keyCode);
   };
   autobot.execAdbShell = function (shellStr) {
     return this.execCmd(shellStr);
