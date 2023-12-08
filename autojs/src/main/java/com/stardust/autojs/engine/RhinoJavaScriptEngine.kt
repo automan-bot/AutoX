@@ -7,19 +7,20 @@ import com.stardust.autojs.engine.module.AssetAndUrlModuleSourceProvider
 import com.stardust.autojs.engine.module.ScopeRequire
 import com.stardust.autojs.execution.ExecutionConfig
 import com.stardust.autojs.project.ScriptConfig
+import com.stardust.autojs.rhino.AndroidContextFactory
+import com.stardust.autojs.rhino.AutoJsContext
 import com.stardust.autojs.rhino.RhinoAndroidHelper
 import com.stardust.autojs.rhino.TopLevelScope
 import com.stardust.autojs.runtime.ScriptRuntime
 import com.stardust.autojs.script.JavaScriptSource
-import com.stardust.automator.UiObjectCollection
 import com.stardust.pio.UncheckedIOException
-import org.mozilla.javascript.*
+import org.mozilla.javascript.Context
+import org.mozilla.javascript.Script
+import org.mozilla.javascript.Scriptable
+import org.mozilla.javascript.ScriptableObject
 import org.mozilla.javascript.commonjs.module.provider.SoftCachingModuleScriptProvider
 import java.io.IOException
 import java.io.InputStreamReader
-import java.io.Reader
-import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Created by Stardust on 2017/4/2.
@@ -28,29 +29,27 @@ import java.util.concurrent.ConcurrentHashMap
 open class RhinoJavaScriptEngine(private val mAndroidContext: android.content.Context) :
     JavaScriptEngine() {
 
-    val context: Context
-    private val mScriptable: TopLevelScope
+    private val wrapFactory = WrapFactory()
+    val context: Context = enterContext()
+    private val mScriptable: TopLevelScope = createScope(this.context)
     lateinit var thread: Thread
         private set
 
-    private val initScript: Script
-        get() {
-            return sInitScript ?: try {
-                val reader = InputStreamReader(mAndroidContext.assets.open("init.js"))
-                val script = context.compileReader(reader, SOURCE_NAME_INIT, 1, null)
-                sInitScript = script
-                script
-            } catch (e: IOException) {
-                throw UncheckedIOException(e)
-            }
+    private val initScript: Script by lazy<Script> {
+        try {
+            val reader = InputStreamReader(mAndroidContext.assets.open("init.js"))
+            val script = context.compileReader(reader, SOURCE_NAME_INIT, 1, null)
+            script
+        } catch (e: IOException) {
+            throw UncheckedIOException(e)
         }
+    }
 
     val scriptable: Scriptable
         get() = mScriptable
 
     init {
-        this.context = enterContext()
-        mScriptable = createScope(this.context)
+
     }
 
     override fun put(name: String, value: Any?) {
@@ -59,13 +58,13 @@ open class RhinoJavaScriptEngine(private val mAndroidContext: android.content.Co
 
     override fun setRuntime(runtime: ScriptRuntime) {
         super.setRuntime(runtime)
+        runtime.bridges.setup(this)
         runtime.topLevelScope = mScriptable
     }
 
     public override fun doExecution(source: JavaScriptSource): Any? {
-        var reader = source.nonNullScriptReader
+        val reader = source.nonNullScriptReader
         try {
-            reader = preprocess(reader)
             val script = context.compileReader(reader, source.toString(), 1, null)
             return if (hasFeature(ScriptConfig.FEATURE_CONTINUATION)) {
                 context.executeScriptWithContinuations(script, mScriptable)
@@ -83,10 +82,6 @@ open class RhinoJavaScriptEngine(private val mAndroidContext: android.content.Co
         return config != null && config.scriptConfig.hasFeature(feature)
     }
 
-    @Throws(IOException::class)
-    protected fun preprocess(script: Reader): Reader {
-        return script
-    }
 
     override fun forceStop() {
         Log.d(LOG_TAG, "forceStop: interrupt Thread: $thread")
@@ -98,7 +93,6 @@ open class RhinoJavaScriptEngine(private val mAndroidContext: android.content.Co
     override fun destroy() {
         super.destroy()
         Log.d(LOG_TAG, "on destroy")
-        sContextEngineMap.remove(context)
         Context.exit()
     }
 
@@ -117,7 +111,7 @@ open class RhinoJavaScriptEngine(private val mAndroidContext: android.content.Co
         }
     }
 
-    internal fun initRequireBuilder(context: Context, scope: Scriptable) {
+    private fun initRequireBuilder(context: Context, scope: Scriptable) {
         val provider = AssetAndUrlModuleSourceProvider(
             mAndroidContext,
             listOf(
@@ -132,7 +126,7 @@ open class RhinoJavaScriptEngine(private val mAndroidContext: android.content.Co
         require.install(scope)
     }
 
-    protected fun createScope(context: Context): TopLevelScope {
+    private fun createScope(context: Context): TopLevelScope {
         val topLevelScope = TopLevelScope()
         topLevelScope.initStandardObjects(context, false)
         return topLevelScope
@@ -141,27 +135,18 @@ open class RhinoJavaScriptEngine(private val mAndroidContext: android.content.Co
     fun enterContext(): Context {
         val context = RhinoAndroidHelper(mAndroidContext).enterContext()
         setupContext(context)
-        sContextEngineMap[context] = this
         return context
     }
 
-    protected fun setupContext(context: Context) {
-        context.optimizationLevel = -1
-        context.languageVersion = Context.VERSION_ES6
-        context.locale = Locale.getDefault()
-        context.wrapFactory = WrapFactory()
+    fun setupContext(context: Context) {
+        context.wrapFactory = wrapFactory
+        (context as? AutoJsContext)?.let {
+            it.rhinoJavaScriptEngine = this
+        }
     }
 
-    private inner class WrapFactory : org.mozilla.javascript.WrapFactory() {
 
-        override fun wrap(cx: Context, scope: Scriptable, obj: Any?, staticType: Class<*>?): Any? {
-            return when {
-                obj is String -> runtime.bridges.toString(obj.toString())
-                staticType == UiObjectCollection::class.java -> runtime.bridges.asArray(obj as UiObjectCollection)
-                else -> super.wrap(cx, scope, obj, staticType)
-            }
-        }
-
+    private inner class WrapFactory : AndroidContextFactory.WrapFactory() {
         override fun wrapAsJavaObject(
             cx: Context?,
             scope: Scriptable,
@@ -179,19 +164,9 @@ open class RhinoJavaScriptEngine(private val mAndroidContext: android.content.Co
     }
 
     companion object {
+        const val SOURCE_NAME_INIT = "<init>"
+        private const val LOG_TAG = "RhinoJavaScriptEngine"
 
-        val SOURCE_NAME_INIT = "<init>"
-
-        private val LOG_TAG = "RhinoJavaScriptEngine"
-
-        private val MODULES_PATH = "modules"
-        private var sInitScript: Script? = null
-        private val sContextEngineMap = ConcurrentHashMap<Context, RhinoJavaScriptEngine>()
-
-
-        fun getEngineOfContext(context: Context): RhinoJavaScriptEngine? {
-            return sContextEngineMap[context]
-        }
     }
 
 

@@ -1,7 +1,57 @@
 # Change Log
 autoxjs 整个项目的一些更新日志,双版本号为稳定版（内容以修复的bug为主），单版本号为激进版本、发布新内容。
 
-## [Unreleased](https://github.com/kkevsekk1/AutoX/compare/6.5.1...HEAD) 未发布
+## [Unreleased](https://github.com/kkevsekk1/AutoX/compare/6.5.5...HEAD) 未发布
+
+## [6.5.5] - 2023-11-10
+@aiselp
+* 移除了ci构建中模板签名，打包时会重新签名
+* 锁定androidx.core版本为1.8.0，高的版本会引起 6.5.4版本运行脚本会出错 修复bug #723
+* 修复打包时只勾选opencv缺少依赖的问题
+* 编辑器优化
+* 添加rxjs库
+* 最后，由于最近几个版本有加大升级，有bug很正常，大家积极提bug、有能力的可以适当修复
+* 每个人都共享力量，软件bug才能修复，少抱怨！
+
+[6.5.5]:https://github.com/kkevsekk1/AutoX/compare/6.5.4...6.5.5
+
+
+## [6.5.4] - 2023-11-10
+@aiselp
+* 换新编辑器
+
+[6.5.4]:https://github.com/kkevsekk1/AutoX/compare/6.5.3...6.5.4
+
+## [6.5.3] - 2023-10-24
+@aiselp
+* 修复 Tasker插件功能
+* 修复一处可能的内存泄露
+* 优化底部导航切换时，已打开的文件目录保持不变，添加文档页面‘回到主页’按钮
+* 修复模块exports导出null和undefined时报错，修复require('xxx')!==require('xxx.js')
+* 修复JsBridge在非ui模式工作异常
+* 修复setTimeout等函数传入仅一个额外参数且该参数为null时报错
+
+  @xiao-maomi
+ * 修复部分设备编辑界面顶栏按钮重叠
+   
+  @drgnchan
+* 修改错别字
+
+[6.5.3]:https://github.com/kkevsekk1/AutoX/compare/6.5.2...6.5.3
+
+
+## [6.5.2] - 2023-9-30
+
+此次升级全是 @aiselp 在此，社区特别感谢其贡献，希望更多人支持
+@aiselp
+
+* 移除旧版lodash避免加载冲突
+* 添加加密配置
+* 添加termux权限
+* 打包配置优化
+* 其他bug 修复
+
+[6.5.2]:https://github.com/kkevsekk1/AutoX/compare/6.4.3...6.5.1
 
 ## [6.5.1] - 2023-09-03
 此次改动较大，留意bug情况
@@ -21,7 +71,7 @@ autoxjs 整个项目的一些更新日志,双版本号为稳定版（内容以�
 * 编辑界面右上角菜单部分选项移至顶栏，标题移至顶栏下方显示完整路径
 * 优化编辑界面顶栏
   
-[6.5.3]:https://github.com/kkevsekk1/AutoX/compare/6.4.3...6.5.1
+[6.5.1]:https://github.com/kkevsekk1/AutoX/compare/6.4.3...6.5.1
 
 ## [6.4.3] - 2023-6-14
 @aiselp

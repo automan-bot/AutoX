@@ -2,7 +2,6 @@ initVersions(file("project-versions.json"))
 
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
-    val kotlin_version = "1.6.21"
 
     extra.apply {
         set("kotlin_version", kotlin_version)
@@ -25,6 +24,7 @@ buildscript {
         classpath(kotlin("gradle-plugin", version = "$kotlin_version"))
         classpath("com.jakewharton:butterknife-gradle-plugin:10.2.3")
         classpath("org.codehaus.groovy:groovy-json:3.0.8")
+        classpath("com.yanzhenjie.andserver:plugin:2.1.12")
     }
 }
 

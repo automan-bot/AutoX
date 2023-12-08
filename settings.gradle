@@ -1,6 +1,4 @@
-apply {
-    from(file("dependencies.gradle.kts"))
-}
+
 include ':app', ':automator', ':common', ':autojs', ':inrt', ':apkbuilder'
 include ':LocalRepo:libtermexec'
 include ':LocalRepo:emulatorview'
@@ -9,3 +7,4 @@ include ':LocalRepo:p7zip'
 include ':LocalRepo:OpenCV'
 //include ':LocalRepo:PaddleOCR4Android'
 include ':paddleocr'
+include ':codeeditor'

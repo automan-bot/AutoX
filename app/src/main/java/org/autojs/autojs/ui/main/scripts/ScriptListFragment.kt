@@ -1,6 +1,7 @@
 package org.autojs.autojs.ui.main.scripts
 
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -25,6 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
+import com.aiselp.autojs.codeeditor.EditActivity
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.leinardi.android.speeddial.compose.FabWithLabel
 import com.leinardi.android.speeddial.compose.SpeedDial
@@ -37,15 +39,16 @@ import org.autojs.autojs.external.fileprovider.AppFileProvider
 import org.autojs.autojs.model.explorer.ExplorerDirPage
 import org.autojs.autojs.model.explorer.Explorers
 import org.autojs.autojs.model.script.Scripts.edit
+import org.autojs.autojs.ui.build.ProjectConfigActivity
+import org.autojs.autojs.ui.build.ProjectConfigActivity_
 import org.autojs.autojs.ui.common.ScriptOperations
 import org.autojs.autojs.ui.explorer.ExplorerViewKt
 import org.autojs.autojs.ui.main.rememberExternalStoragePermissionsState
 import org.autojs.autojs.ui.main.showExternalStoragePermissionToast
-import org.autojs.autojs.ui.build.ProjectConfigActivity
-import org.autojs.autojs.ui.build.ProjectConfigActivity_
 import org.autojs.autojs.ui.viewmodel.ExplorerItemList.SortConfig
 import org.autojs.autojs.ui.widget.fillMaxSize
 import org.autojs.autoxjs.R
+import java.io.File
 
 /**
  * Created by wilinz on 2022/7/15.
@@ -60,6 +63,7 @@ class ScriptListFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        explorerView.setUpViews()
         return ComposeView(requireContext()).apply {
             setContent {
                 Scaffold(
@@ -70,7 +74,7 @@ class ScriptListFragment : Fragment() {
                 ) {
                     AndroidView(
                         modifier = Modifier.padding(it),
-                        factory = { explorerView.apply { setUpViews() } }
+                        factory = { explorerView }
                     )
                 }
             }
@@ -236,7 +240,9 @@ class ScriptListFragment : Fragment() {
         setOnItemClickListener { _, item ->
             item?.let {
                 if (item.isEditable) {
-                    edit(requireContext(), item.toScriptFile())
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        EditActivity.editFile(requireContext(), File(item.path))
+                    } else edit(requireContext(), item.toScriptFile())
                 } else {
                     IntentUtil.viewFile(get(), item.path, AppFileProvider.AUTHORITY)
                 }
