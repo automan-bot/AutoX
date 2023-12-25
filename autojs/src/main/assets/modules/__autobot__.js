@@ -72,6 +72,7 @@ module.exports = function (__runtime__, scope) {
     playMusic: "/playMusic",
     exit: "/exit",
   };
+  //默认访问本机的18080端口
   var autobot = {
     isSSL: false,
     baseServerUrl: "http://127.0.0.1:18080",
