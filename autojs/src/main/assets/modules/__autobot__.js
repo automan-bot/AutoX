@@ -391,7 +391,9 @@ module.exports = function (__runtime__, scope) {
     const axiosResponse = this._request({
       url: this.urlMap["getAllContact"],
       method: "get",
-      params: para,
+      params: {
+        number: phoneNumber,
+      },
     });
     return axiosResponse.body.json().data;
   };
