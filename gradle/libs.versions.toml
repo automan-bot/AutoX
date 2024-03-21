@@ -13,6 +13,7 @@ espresso-core = "3.5.1"
 appcompat = "1.4.2"
 material = "1.9.0"
 accompanist-version = "0.24.13-rc"
+jsoup = "1.17.2"
 
 [libraries]
 
@@ -61,6 +62,7 @@ appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "a
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 andserver-processor = { module = "com.yanzhenjie.andserver:processor", version.ref = "andserver" }
 andserver-api = { module = "com.yanzhenjie.andserver:api", version.ref = "andserver" }
+jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 [plugins]
 
 [bundles]

@@ -44,6 +44,7 @@ dependencies {
     api(libs.material)
     api("com.github.hyb1996:EnhancedFloaty:0.31")
     api("com.makeramen:roundedimageview:2.3.0")
+    api(libs.jsoup)
     // OkHttp
     api(libs.okhttp)
     // JDeferred

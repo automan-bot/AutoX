@@ -6,7 +6,9 @@
  * @returns
  */
 module.exports = function (__runtime__, scope) {
+  importPackage(Packages["jsoup"]);//org.jsoup
   importPackage(Packages["okhttp3"]);
+  importClass(org.jsoup.Jsoup);
   const cheerio = require("cheerio");
   function ScreenInfo(iScreenInfo) {
     this.width = iScreenInfo.width;
@@ -950,6 +952,17 @@ module.exports = function (__runtime__, scope) {
     });
     return doc;
   };
+  autobot.getScreenDocument2 = function () {
+      for(let i=0;i<3;i++){
+          try{
+              let xmlStr = this.screenXml();
+              let doc = Jsoup.parse(xmlStr);
+              return doc;
+          }catch(e){}
+      }
+      console.error(`加载文档失败：${selector}`);
+  };
+  //切换到jsoup来进行查找，这里使用cheerio对于一些复杂屏幕布局来说太慢了
   autobot.querySelectorAll = function (selector, option) {
     option = option || {};
     //对百分比的region进行转换
@@ -970,18 +983,24 @@ module.exports = function (__runtime__, scope) {
         };
       }
     }
-    const $ = this.getScreenDocument(device);
+    let startTime=Date.now();
+    const $ = this.getScreenDocument2();
     let nodes = [];
     try {
-      nodes = $(`${selector}`);
+//      nodes = $(`${selector}`);
+        nodes=$.select(selector)
     } catch (e) {
       console.error(`查找出错：${selector}`);
+      return;
     }
     let result = [];
     for (let i = 0; i < nodes.length; i++) {
       let item = nodes[i];
-      let bounds = $(item).attr("bound");
-      let text = $(item).attr("text");
+
+      /*let bounds = $(item).attr("bound");
+      let text = $(item).attr("text");*/
+      let bounds =item.attr("bound");
+      let text = item.attr("text");
       bounds = bounds.split(",").map((item) => {
         let wz = parseInt(item);
         return isNaN(wz) ? 0 : wz;
@@ -993,9 +1012,10 @@ module.exports = function (__runtime__, scope) {
           continue;
         }
       }
+      let itemObj={}
       let mx = Math.round(x1 + (x2 - x1) / 2);
       let my = Math.round(y1 + (y2 - y1) / 2);
-      item.bounds = {
+      itemObj.bounds = {
         mx,
         my,
         x1,
@@ -1003,10 +1023,13 @@ module.exports = function (__runtime__, scope) {
         x2,
         y2,
       };
-      item.text = text;
-      result.push(item);
+      itemObj.text = text;
+//      itemObj.sObj = item
+      result.push(itemObj);
     }
-    // console.log("找到元素", selector, result.length, result);
+    let endTime=Date.now();
+    let execTime=endTime-startTime;
+    console.log(`用时${execTime}ms,选择器${selector},查找到的元素个数${result.length}`)
     return result;
   };
   autobot.querySelector = function (selector, option) {
