@@ -37,7 +37,7 @@ public class ScriptIntents {
     public static boolean handleIntent(Context context, Intent intent) {
         String path = getPath(intent);
         String script = intent.getStringExtra(ScriptIntents.EXTRA_KEY_PRE_EXECUTE_SCRIPT);
-        if(com.stardust.util.TextUtils.isBase64(script)){
+        if(script!=null && com.stardust.util.TextUtils.isBase64(script)){
             try{
                 String newScript = Base64Utils.base64Decode(script);
                 if(!TextUtils.isEmpty(newScript)){
