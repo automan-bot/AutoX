@@ -54,6 +54,9 @@ module.exports = function (__runtime__, scope) {
     cancelAllNotifications: "/cancelAllNotifications",
     callPhone: "/callPhone",
     endCall: "/endCall",
+    turnSafeModeOn: "/turnSafeModeOn",
+    turnSafeModeOff: "/turnSafeModeOff",
+    isSafeMode: "/isSafeMode",
     upload: "/upload",
     inputText: "/inputText",
     execCmd: "/execCmd",
@@ -600,6 +603,30 @@ module.exports = function (__runtime__, scope) {
   autobot.endCall = function (para) {
     const axiosResponse = this._request({
       url: this.urlMap["endCall"],
+      method: "get",
+      params: para,
+    });
+    return axiosResponse.body.json().data == "1";
+  };
+  autobot.turnSafeModeOn=function (para) {
+    const axiosResponse = this._request({
+      url: this.urlMap["turnSafeModeOn"],
+      method: "get",
+      params: para,
+    });
+    return axiosResponse.body.json().data == "1";
+  };
+  autobot.turnSafeModeOff=function (para) {
+    const axiosResponse = this._request({
+      url: this.urlMap["turnSafeModeOff"],
+      method: "get",
+      params: para,
+    });
+    return axiosResponse.body.json().data == "1";
+  };
+  autobot.isSafeMode=function (para) {
+    const axiosResponse = this._request({
+      url: this.urlMap["isSafeMode"],
       method: "get",
       params: para,
     });
