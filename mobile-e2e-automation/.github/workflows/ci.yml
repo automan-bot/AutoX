@@ -1,0 +1,63 @@
+name: mobile-e2e
+
+on:
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  e2e-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start Appium server
+        run: npm run appium:start
+        continue-on-error: true
+
+      - name: Start Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          arch: x86_64
+          profile: Nexus 5
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: echo "Emulator started"
+
+      - name: Run smoke tests
+        env:
+          PLATFORM: android
+          APPIUM_URL: http://127.0.0.1:4723
+          APP_PATH: artifacts/app-stage.apk
+          E2E_USERNAME: ${{ secrets.E2E_USERNAME }}
+          E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+          ANDROID_SERIAL: emulator-5554
+          ENV_PROFILE: stage
+        run: npm run test:smoke
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-artifacts
+          path: |
+            laixi/artifacts/
+            !laixi/artifacts/.gitkeep
+          retention-days: 7
+
+      - name: Stop Appium server
+        if: always()
+        run: npm run appium:stop
+        continue-on-error: true
+
