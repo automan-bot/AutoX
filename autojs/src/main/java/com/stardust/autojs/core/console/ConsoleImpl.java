@@ -79,6 +79,7 @@ public class ConsoleImpl extends AbstractConsole {
     private WeakReference<ConsoleView> mConsoleView;
     private volatile boolean mShown = false;
     private int mX, mY;
+    private LogPersistence mLogPersistence;
 
     public ConsoleImpl(UiHandler uiHandler) {
         this(uiHandler, null);
@@ -100,6 +101,12 @@ public class ConsoleImpl extends AbstractConsole {
                 }
             }
         };
+        
+        // 初始化日志持久化
+        mLogPersistence = new LogPersistence(uiHandler.getContext());
+        
+        // 加载历史日志
+        loadPersistedLogs();
     }
 
     public void setConsoleView(ConsoleView consoleView) {
@@ -139,6 +146,13 @@ public class ConsoleImpl extends AbstractConsole {
         if (mLogListener != null && mLogListener.get() != null) {
             mLogListener.get().onNewLog(logEntry);
         }
+        
+        // 只在顶层 Console（GlobalConsole）中持久化日志，避免重复
+        // 顶层 Console 的 mGlobalConsole 为 null
+        if (mGlobalConsole == null && mLogPersistence != null) {
+            mLogPersistence.appendLog(level, charSequence);
+        }
+        
         if(maxLines>0&& mLogEntries.size()>maxLines){
             clear();
         }
@@ -204,6 +218,42 @@ public class ConsoleImpl extends AbstractConsole {
         }
         if (mLogListener != null && mLogListener.get() != null) {
             mLogListener.get().onLogClear();
+        }
+        
+        // 只在顶层 Console 中清除持久化日志
+        if (mGlobalConsole == null && mLogPersistence != null) {
+            mLogPersistence.clearLogs();
+        }
+    }
+    
+    /**
+     * 加载持久化的日志
+     */
+    private void loadPersistedLogs() {
+        if (mLogPersistence == null) {
+            return;
+        }
+        
+        try {
+            java.util.List<LogEntry> persistedLogs = mLogPersistence.loadLogs();
+            if (persistedLogs != null && !persistedLogs.isEmpty()) {
+                synchronized (mLogEntries) {
+                    mLogEntries.addAll(persistedLogs);
+                    // 更新 ID 计数器
+                    if (!mLogEntries.isEmpty()) {
+                        int maxId = 0;
+                        for (LogEntry entry : mLogEntries) {
+                            if (entry.id > maxId) {
+                                maxId = entry.id;
+                            }
+                        }
+                        mIdCounter.set(maxId + 1);
+                    }
+                }
+                Log.d("ConsoleImpl", "Loaded " + persistedLogs.size() + " persisted logs");
+            }
+        } catch (Exception e) {
+            Log.e("ConsoleImpl", "Failed to load persisted logs", e);
         }
     }
 
